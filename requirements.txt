@@ -1,0 +1,11 @@
+# TrainerHub 运行依赖
+# 安装: .venv\Scripts\pip install -r requirements.txt
+#
+# 仅列出直接依赖；间接依赖会由 pip 自动解析。
+# 全部为宽松型许可(MIT / BSD / Apache-2.0)，详见 THIRD_PARTY_NOTICES.md
+
+# 桌面窗口与 WebView2 桥接
+pywebview>=6.2,<7.0
+
+# HTTP 请求：在线检索与文件下载
+requests>=2.32,<3.0
