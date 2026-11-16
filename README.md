@@ -4,6 +4,8 @@
 
 > 界面为中文。数据全部保存在你自己电脑的 `data/` 目录里，不上传任何服务器。
 
+本项目以 **MIT 许可证** 开源：<https://github.com/gulipiaoge/TrainerHub-open>
+
 ---
 
 ## ✨ 功能
@@ -38,6 +40,9 @@
    .venv\Scripts\pip install -r requirements.txt
    ```
 3. 双击 `launch.bat`（或 `启动器.bat`）
+
+> 启动脚本使用 `%~dp0` 自定位目录，把它放在任意路径都能正常运行。
+> 脚本内容为纯英文，以避免 Windows 批处理在 GBK 编码下解析中文时出错。
 
 ### 方式二：手动运行
 
