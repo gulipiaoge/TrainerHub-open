@@ -1,0 +1,16 @@
+# Python 虚拟环境与缓存
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# 运行时个人数据：含本机游戏路径、设置的 mod 目录、以及大体量 mod 文件
+# 这些是用户私有数据，不进版本库；代码回滚不受影响
+data/
+
+# 日志与临时文件
+*.log
+*.tmp
+.DS_Store
+Thumbs.db

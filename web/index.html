@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrainerHub</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">TH</div>
+      <div class="brand-text">
+        <div class="brand-name">TrainerHub</div>
+        <div class="brand-sub">修改器管理器</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active" data-page="hub">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M17.5 14v7M14 17.5h7"/></svg>
+        <span>游戏库</span><span class="nav-badge" id="libCount">0</span>
+      </div>
+      <div class="nav-item" data-page="library">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span>修改器库</span>
+      </div>
+      <div class="nav-item" data-page="online">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <span>在线下载</span>
+      </div>
+      <div class="nav-item" data-page="mods">
+        <svg viewBox="0 0 24 24"><path d="M10 3h4v4h4a1 1 0 011 1v4h-3v4h-4v-4H8v4H4v-4a1 1 0 011-1h4V8H6a1 1 0 01-1-1V4a1 1 0 011-1h4z"/></svg>
+        <span>Mod 管理</span><span class="nav-badge" id="modTotalBadge">0</span>
+      </div>
+      <div class="nav-item" data-page="hotkeys">
+        <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg>
+        <span>快捷键说明</span>
+      </div>
+      <div class="nav-item" data-page="settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1.08 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        <span>设置</span>
+      </div>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="tip-card">
+        <div class="tip-title">安全提示</div>
+        <div class="tip-text">本工具仅做文件管理与启动，不修改任何游戏进程。修改器来自第三方站点，请核对文件哈希后再决定是否放行。仅限单机，勿用于联机。</div>
+      </div>
+      <div class="version">v1.5.9 · 本地运行</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-title" id="pageTitle">游戏库</div>
+      <div class="topbar-actions" id="topActions"></div>
+    </header>
+
+    <section class="page" id="page-library">
+      <div class="toolbar">
+        <div class="searchbox">
+          <svg class="search-ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          <input type="text" id="libSearch" placeholder="搜索本地修改器…">
+        </div>
+        <div class="toolbar-btns">
+          <select id="libSort" class="select" title="排序方式">
+            <option value="added">按入库时间</option>
+            <option value="name">按名称</option>
+            <option value="lastLaunch">按最近启动</option>
+          </select>
+          <button class="btn btn-ghost" id="btnOpenFolder">打开目录</button>
+          <button class="btn btn-primary" id="btnImport">＋ 批量导入</button>
+        </div>
+      </div>
+      <div id="libEmpty"></div>
+      <div class="trainer-grid" id="trainerGrid"></div>
+    </section>
+
+    <section class="page active" id="page-hub">
+      <div class="hub-crumb" id="hubCrumb"></div>
+      <!-- 层级1：游戏列表 -->
+      <div class="hub-view" id="hubList">
+        <div class="hub-intro">
+          <div class="hub-intro-title">我的游戏</div>
+          <div class="hub-intro-desc">游戏由你自己添加或扫描本地游戏目录得到；修改器和 Mod 都放进对应游戏里，不会重复生成游戏。</div>
+        </div>
+        <div class="hub-toolbar">
+          <div class="searchbox" style="flex:1">
+            <svg class="search-ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+            <input type="text" id="hubQuery" placeholder="搜索游戏…">
+          </div>
+          <div class="toolbar-btns">
+            <button class="btn btn-ghost btn-sm" id="hubScan">扫描游戏</button>
+            <button class="btn btn-ghost btn-sm" id="hubAdd">＋ 添加游戏</button>
+            <button class="btn btn-primary btn-sm" id="hubImport">导入修改器</button>
+          </div>
+        </div>
+        <div id="hubEmpty"></div>
+        <div class="hub-grid" id="hubGrid"></div>
+      </div>
+      <!-- 层级2：单个游戏 → 修改器 / Mod 两个选项 -->
+      <div class="hub-view" id="hubGame" style="display:none">
+        <div class="hub-detail-head" style="margin-bottom:18px">
+          <button class="btn btn-ghost btn-sm" id="hubBackList">← 返回游戏库</button>
+        </div>
+        <div class="hub-game-head">
+          <div class="hub-game-icon"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"/><rect x="2" y="7" width="20" height="10" rx="4"/></svg></div>
+          <div class="hub-game-head-main">
+            <div class="hub-game-name-row">
+              <span class="hub-game-name" id="hubGameName"></span>
+              <button class="icon-btn" id="hubRename" title="重命名游戏">✎</button>
+            </div>
+            <div class="hub-game-ver mono-num" id="hubGameVer"></div>
+          </div>
+        </div>
+        <div class="hub-game-actions" id="hubGameActions"></div>
+        <div class="hub-options" id="hubOptions"></div>
+      </div>
+      <!-- 层级3：具体内容（修改器详情 / Mod 列表） -->
+      <div class="hub-view" id="hubDetail" style="display:none">
+        <div class="hub-detail-head">
+          <button class="btn btn-ghost btn-sm" id="hubBackOptions">← 返回游戏</button>
+          <span class="hub-detail-title" id="hubDetailTitle"></span>
+        </div>
+        <div id="hubDetailBody"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-online">
+      <div class="online-search">
+        <div class="searchbox big">
+          <svg class="search-ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          <input type="text" id="onlineQuery" placeholder="输入游戏英文名，如 Black Myth Wukong / Elden Ring / 黑神话：悟空…">
+          <button class="btn btn-primary" id="btnSearch">搜索</button>
+        </div>
+        <div class="search-hint">数据来自 <a class="link" href="https://flingtrainer.com" target="_blank">flingtrainer.com</a> · 全部为免费独立版 · 第三方站点资源，请自行核对文件哈希</div>
+      </div>
+      <div id="searchResults"></div>
+      <div class="detail-panel" id="detailPanel" style="display:none">
+        <div class="detail-head">
+          <div>
+            <div class="detail-title" id="detailTitle"></div>
+            <div class="detail-meta" id="detailMeta"></div>
+          </div>
+          <a class="link" id="detailSource" href="#" target="_blank">在官网打开 ↗</a>
+        </div>
+        <div class="detail-subtitle">可下载版本</div>
+        <div class="download-list" id="downloadList"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-mods">
+      <div class="mods-intro">
+        <div class="mods-intro-title">给库里的游戏添加 Mod</div>
+        <div class="mods-intro-desc">选择一款已入库的游戏，去 mod 站点搜索并关联补丁文件。支持添加下载直链、导入本地文件、记录安装说明。</div>
+      </div>
+      <div class="mods-search">
+        <div class="searchbox">
+          <svg class="search-ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          <input type="text" id="modsQuery" placeholder="搜索游戏 / 已有 mod 名称…">
+        </div>
+      </div>
+      <div id="modsEmpty"></div>
+      <div class="mods-grid" id="modsGrid"></div>
+    </section>
+
+    <section class="page" id="page-hotkeys">
+      <div class="hk-toolbar">
+        <div class="searchbox">
+          <svg class="search-ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          <input type="text" id="hkSearch" placeholder="搜索键位或功能，如 无限生命 / Num 2…">
+        </div>
+        <div class="toolbar-btns">
+          <button class="btn btn-ghost btn-sm" id="btnHkToggle">全部收起</button>
+          <button class="btn btn-ghost btn-sm" id="btnHkPrint">打印 / 存为PDF</button>
+        </div>
+      </div>
+      <div class="info-banner">
+        <svg viewBox="0 0 24 24" class="info-ico"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+        <div>本表是风灵月影<strong>通用键位约定</strong>，不是所有修改器都支持全部键位——不支持的键在修改器窗口里不会显示。<strong>小键盘依赖</strong>：无小键盘的笔记本可用 Fn 映射或外接键盘，否则基础功能无法使用。<strong>失焦无效</strong>：游戏不在前台时快捷键无响应。</div>
+      </div>
+      <div class="hotkey-grid" id="hotkeyGrid"></div>
+    </section>
+
+    <section class="page" id="page-settings">
+      <div class="settings-card">
+        <div class="settings-group">
+          <div class="settings-label">修改器存放目录</div>
+          <div class="settings-row">
+            <input type="text" class="readonly-input" id="settingDir" readonly>
+            <button class="btn btn-ghost" id="btnOpenFolder2">打开</button>
+          </div>
+          <div class="settings-note">所有下载和导入的修改器都放在这里，仅在项目目录内。</div>
+        </div>
+        <div class="settings-group">
+          <div class="settings-label">启动修改器前二次确认</div>
+          <label class="switch"><input type="checkbox" id="settingConfirm"><span class="slider"></span></label>
+          <div class="settings-note">开启后点击「启动」会先弹出提示，提醒先进入游戏。</div>
+        </div>
+        <div class="settings-group">
+          <div class="settings-label">检查更新</div>
+          <div class="settings-row">
+            <button class="btn btn-ghost" id="btnCheckUpdate">检测本地修改器是否有新版</button>
+          </div>
+          <div class="settings-note" id="updateResult">根据官网 Last Updated 日期比对。</div>
+        </div>
+        <div class="settings-group">
+          <div class="settings-label">文件哈希校验</div>
+          <div class="settings-row">
+            <select id="hashSelect" class="select"></select>
+            <button class="btn btn-ghost" id="btnHash">查看 SHA-256</button>
+          </div>
+          <div class="settings-note">来源为第三方站点，可核对哈希后自行决定是否放行。</div>
+          <div class="hash-result" id="hashResult" style="display:none"></div>
+        </div>
+      </div>
+      <div class="about-card">
+        <div class="about-title">关于 TrainerHub</div>
+        <div class="about-text">本地桌面工具，把风灵月影官网的修改器搜索、下载、启动、管理整合到一起。所有数据只保存在本项目的 <code>data/</code> 目录，不修改系统、不写注册表、无后台常驻。</div>
+        <div class="about-warn">请仅用于单机游戏。联网 / 反作弊游戏使用修改器会导致封号。</div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="overlay" id="downloadOverlay" style="display:none">
+  <div class="progress-card">
+    <div class="progress-title" id="progressTitle">正在下载…</div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-pct" id="progressPct">0%</div>
+    <div class="progress-filename" id="progressFilename"></div>
+  </div>
+</div>
+
+<div class="overlay" id="confirmOverlay" style="display:none">
+  <div class="confirm-card">
+    <div class="confirm-title" id="confirmTitle">确认</div>
+    <div class="confirm-body" id="confirmBody"></div>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" id="confirmCancel">取消</button>
+      <button class="btn btn-primary" id="confirmOk">确定</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="promptOverlay" style="display:none">
+  <div class="confirm-card">
+    <div class="confirm-title" id="promptTitle">输入</div>
+    <div class="confirm-body" id="promptBody"></div>
+    <div class="prompt-fields" id="promptFields"></div>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" id="promptCancel">取消</button>
+      <button class="btn btn-primary" id="promptOk">确定</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="safetyOverlay" style="display:none">
+  <div class="confirm-card safety-card">
+    <div class="confirm-title">首次使用须知</div>
+    <div class="confirm-body">
+      <p>本工具仅做<strong>本地文件管理与启动</strong>，不修改任何游戏进程。</p>
+      <ul>
+        <li>修改器来自<strong>第三方站点</strong>，请核对文件哈希后自行决定是否放行；</li>
+        <li>请<strong>仅用于单机游戏</strong>，切勿用于联机或反作弊环境，否则会封号；</li>
+        <li>官网独立版本身免费，本工具不提供任何付费内容。</li>
+      </ul>
+      <label class="chk-row"><input type="checkbox" id="safetyDontShow"> 不再提示</label>
+    </div>
+    <div class="confirm-actions">
+      <button class="btn btn-primary" id="safetyOk">我已了解</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay drawer-overlay" id="scanOverlay" style="display:none">
+  <div class="drawer">
+    <div class="drawer-head">
+      <div>
+        <div class="drawer-title">扫描本地游戏</div>
+        <div class="drawer-sub" id="scanSub">选择一个游戏安装目录，勾选识别到的游戏添加</div>
+      </div>
+      <button class="icon-btn" id="scanClose" title="关闭">✕</button>
+    </div>
+    <div class="drawer-body">
+      <div class="mod-add" style="margin-bottom:12px">
+        <button class="btn btn-ghost btn-sm" id="scanPick">选择游戏目录…</button>
+        <span class="scan-path mono" id="scanPath">尚未选择</span>
+      </div>
+      <div class="mod-section-title">识别到的游戏 <span class="badge-inline" id="scanCount">0</span></div>
+      <div class="scan-list" id="scanList"></div>
+      <div class="mod-hint">扫描会跳过小于 512KB 的 exe（多为修改器/小工具）与安装包。识别不到的游戏可用「＋ 添加游戏」手动添加。</div>
+      <button class="btn btn-primary" id="scanAdd" style="margin-top:12px">添加选中的游戏</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay drawer-overlay" id="modOverlay" style="display:none">
+  <div class="drawer">
+    <div class="drawer-head">
+      <div>
+        <div class="drawer-title">添加 Mod</div>
+        <div class="drawer-sub" id="modGameName"></div>
+      </div>
+      <button class="icon-btn" id="modClose" title="关闭">✕</button>
+    </div>
+    <div class="drawer-body">
+      <div class="mod-install-dir" id="modInstallDir"></div>
+      <div class="mod-section-title">去 mod 站点搜索</div>
+      <div class="mod-links" id="modLinks"></div>
+      <div class="mod-hint">在这些站点下载后，用下方「导入本地文件」或「添加下载链接」关联到本游戏。</div>
+      <div class="mod-section-title">添加 mod</div>
+      <div class="mod-add">
+        <input type="text" id="modName" placeholder="名称，如画质增强补丁">
+        <input type="text" id="modUrl" placeholder="下载直链（http/https，可留空）">
+        <input type="text" id="modNote" placeholder="备注 / 安装说明（可选）">
+        <div class="mod-add-btns">
+          <button class="btn btn-primary btn-sm" id="modAddLink">添加链接</button>
+          <button class="btn btn-ghost btn-sm" id="modImportFile">导入本地文件</button>
+        </div>
+      </div>
+      <div class="mod-hint">添加后，回到「游戏库 → 该游戏 → Mod」即可查看和管理（安装 / 卸载 / 重命名 / 移除）。</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>
