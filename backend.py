@@ -1458,7 +1458,7 @@ class Backend:
 
     def get_app_info(self):
         return {
-            "version": "1.6.1",
+            "version": "1.6.4",
             "trainer_dir": str(TRAINERS_DIR),
             "library_count": len(self._load_library()),
         }

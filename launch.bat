@@ -1,15 +1,15 @@
 @echo off
-chcp 65001 >nul
 cd /d "%~dp0"
-title TrainerHub - 修改器管理器
+title TrainerHub
 echo.
-echo   TrainerHub 正在启动...
-echo   所有数据仅保存在本目录 data\ 下
+echo   TrainerHub is starting...
+echo   All data stays in this folder under data\
 echo.
 "%~dp0.venv\Scripts\pythonw.exe" "%~dp0app.py"
 if errorlevel 1 (
   echo.
-  echo [提示] 若窗口未出现，请检查 WebView2 运行时是否安装。
+  echo [ERROR] App did not start. Please check that the WebView2 Runtime is installed.
+  echo         Run: .venv\Scripts\pip install -r requirements.txt
   pause
 )
 exit
