@@ -1,0 +1,6 @@
+# Windows 批处理脚本必须用 CRLF；cmd.exe 在纯 LF 下解析 goto 标签可能异常。
+# 显式声明可保证任何机器 checkout 后都是 CRLF，不受 core.autocrlf 设置影响。
+*.bat text eol=crlf
+
+# 二进制资源不做换行归一化
+*.ico binary
