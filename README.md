@@ -43,6 +43,12 @@
 
 > 启动脚本使用 `%~dp0` 自定位目录，把它放在任意路径都能正常运行。
 > 脚本内容为纯英文，以避免 Windows 批处理在 GBK 编码下解析中文时出错。
+> 脚本用 `start` 异步拉起 `pythonw.exe` 后立即退出，不会留下常驻的黑色控制台窗口。
+>
+> **桌面快捷方式（推荐）**：直接指向 `.venv\Scripts\pythonw.exe` 并以 `app.py` 为参数，
+> 完全不经过 `cmd.exe`，启动时不会出现任何控制台窗口。可在桌面新建一个快捷方式，
+> 目标填 `...\TrainerHub\.venv\Scripts\pythonw.exe`、参数填 `"...\TrainerHub\app.py"`、
+> 起始位置填 `...\TrainerHub`，图标指向 `icon.ico`。
 
 ### 方式二：手动运行
 

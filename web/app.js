@@ -1,4 +1,4 @@
-/* TrainerHub 前端逻辑 v1.6.4 */
+/* TrainerHub 前端逻辑 v1.6.5 */
 (function () {
   'use strict';
 
