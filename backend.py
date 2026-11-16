@@ -561,12 +561,21 @@ class Backend:
                         g = next((x for x in games if x.get("id") == gid), None)
                         if g:
                             return {"ok": True, "game_id": gid, "created": False, "name": g["name"]}
-        # 2) 名字归一化匹配
+        # 2) 名字归一化匹配（精确）
         norm = self._norm_game_name(name)
         if norm:
             for g in games:
                 if self._norm_game_name(g.get("name", "")) == norm:
                     return {"ok": True, "game_id": g["id"], "created": False, "name": g["name"]}
+            # 2b) 宽松匹配：剥离结尾的续作序号再比一次
+            # 官网标题常带 "2"（Red Dead Redemption 2 Trainer），而用户库里是"荒野大镖客"
+            # 归一化后 reddeadredemption2 vs reddeadredemption，精确匹配会漏，导致重复游戏
+            loose = re.sub(r"\d+$", "", norm)
+            if loose and loose != norm:
+                for g in games:
+                    gnorm = self._norm_game_name(g.get("name", ""))
+                    if gnorm == loose or re.sub(r"\d+$", "", gnorm) == loose:
+                        return {"ok": True, "game_id": g["id"], "created": False, "name": g["name"]}
         # 3) 新建游戏
         display = self._game_name_from_trainer(name, "") or _safe_name(name or "游戏")
         game = {
@@ -1449,7 +1458,7 @@ class Backend:
 
     def get_app_info(self):
         return {
-            "version": "1.5.9",
+            "version": "1.6.1",
             "trainer_dir": str(TRAINERS_DIR),
             "library_count": len(self._load_library()),
         }

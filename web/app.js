@@ -1,4 +1,4 @@
-/* TrainerHub 前端逻辑 v1.5.9 */
+/* TrainerHub 前端逻辑 v1.6.1 */
 (function () {
   'use strict';
 
@@ -87,7 +87,7 @@
   }
 
   // ---------- 导航 ----------
-  var TITLES = { library: '修改器库', hub: '游戏库', online: '在线下载', mods: 'Mod 管理', hotkeys: '快捷键说明', settings: '设置' };
+  var TITLES = { library: '修改器库', hub: '游戏库', online: '修改器在线下载', mods: 'Mod 管理', hotkeys: '快捷键说明', settings: '设置' };
   function bindNav() {
     document.querySelectorAll('.nav-item').forEach(function (it) {
       it.addEventListener('click', function () { goto(it.dataset.page); });
@@ -146,8 +146,8 @@
       empty.innerHTML =
         '<div class="empty-state"><div class="empty-icon">▦</div>' +
         '<div class="empty-title">库里还是空的</div>' +
-        '<div class="empty-desc">导入本地修改器，或去「在线下载」从风灵月影官网获取免费独立版。</div>' +
-        '<div class="empty-actions"><button class="btn btn-primary" data-goto="online">去在线下载</button>' +
+        '<div class="empty-desc">导入本地修改器，或去「修改器在线下载」从风灵月影官网获取免费独立版。</div>' +
+        '<div class="empty-actions"><button class="btn btn-primary" data-goto="online">去在线下载修改器</button>' +
         '<button class="btn btn-ghost" id="btnImport2">导入本地文件</button></div></div>';
       empty.querySelector('[data-goto]').addEventListener('click', function () { goto('online'); });
       $('btnImport2').addEventListener('click', doImport);
@@ -270,6 +270,63 @@
   function bindOnline() {
     $('btnSearch').addEventListener('click', doSearch);
     $('onlineQuery').addEventListener('keydown', function (e) { if (e.key === 'Enter') doSearch(); });
+    $('pickGameCancel').addEventListener('click', function () {
+      if (state._closePickGame) state._closePickGame(null);
+    });
+  }
+
+  // 选择下载归属的游戏：返回 Promise<{game_id, name}|null>
+  // 列出已有游戏下拉；也可新建。默认按官网名智能预选最接近的一个，但必须用户点确认。
+  async function pickGame(suggestName) {
+    // 确保游戏列表是最新的
+    try { await loadHub(); } catch (e) {}
+    return new Promise(function (resolve) {
+      var games = (state.hub || []).slice();
+      $('pickGameBody').innerHTML =
+        '<p>下载前请先选择这款修改器要放进哪个游戏。修改器会归入你选的游戏，<b>不会自动生成新游戏</b>。</p>' +
+        (suggestName ? '<p>官网名称：<strong>' + esc(suggestName) + '</strong></p>' : '');
+      if (!games.length) {
+        $('pickGameSelect').innerHTML = '<option value="">（库里还没有游戏，请在下面新建一个）</option>';
+        $('pickGameNew').value = suggestName || '';
+      } else {
+        // 智能预选：名字归一化后包含关系
+        var key = (suggestName || '').toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g, '');
+        var best = '';
+        games.forEach(function (g) {
+          var gn = (g.name || '').toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g, '');
+          if (key && gn && (key.indexOf(gn) >= 0 || gn.indexOf(key) >= 0)) best = g.id;
+        });
+        $('pickGameSelect').innerHTML = games.map(function (g) {
+          return '<option value="' + esc(g.id) + '"' + (g.id === best ? ' selected' : '') + '>' +
+            esc(g.name) + '（现有 ' + ((g.trainers || []).length) + ' 修改器）</option>';
+        }).join('');
+        $('pickGameNew').value = '';
+      }
+      $('pickGameOverlay').style.display = 'flex';
+      $('pickGameOk').onclick = function () {
+        var newName = $('pickGameNew').value.trim();
+        var picked = $('pickGameSelect').value;
+        if (newName) {
+          // 新建游戏：先查重，已存在则直接归入
+          var exist = games.find(function (g) { return (g.name || '').toLowerCase() === newName.toLowerCase(); });
+          if (exist) { state._closePickGame({ game_id: exist.id, name: exist.name, reused: true }); return; }
+          api.create_game(newName).then(function (r) {
+            if (r && r.ok) state._closePickGame({ game_id: r.game.id, name: r.game.name, created: true });
+            else toast('新建游戏失败：' + ((r && r.error) || '未知错误'), 'error');
+          }).catch(function (e) { toast('新建游戏失败：' + e, 'error'); });
+          return;
+        }
+        if (!picked) { toast('请选择游戏或输入新游戏名', 'error'); return; }
+        var g = games.find(function (x) { return x.id === picked; });
+        state._closePickGame({ game_id: picked, name: g ? g.name : '', reused: true });
+      };
+      state._closePickGame = function (v) {
+        $('pickGameOverlay').style.display = 'none';
+        $('pickGameOk').onclick = null;
+        state._closePickGame = null;
+        resolve(v);
+      };
+    });
   }
 
   function renderOnlineIdle() {
@@ -379,7 +436,7 @@
             '<div class="dl-name" title="' + esc(dl.filename) + '">' + esc(dl.filename) + '</div>' +
             '<div class="dl-sub mono-num">' + esc(dl.date) + ' · ' + esc(dl.size) + ' · ' + esc(dl.downloads) + ' 次下载</div>' +
           '</div>' +
-          '<button class="btn btn-primary btn-sm" data-dl="' + i + '">下载</button>' +
+          '<button class="btn btn-primary btn-sm" data-dl="' + i + '">下载修改器</button>' +
         '</div>';
       }).join('');
       $('downloadList').querySelectorAll('[data-dl]').forEach(function (b) {
@@ -403,18 +460,23 @@
   }
 
   async function doDownload(dl, gameName, options, version, detailUrl) {
+    // 先选归属游戏：不传 game_id 后端就会凭空新建游戏，这是重复的根源
+    var pick = await pickGame(gameName);
+    if (!pick) return;  // 用户取消
     $('downloadOverlay').style.display = 'flex';
-    $('progressTitle').textContent = '正在下载…（完成后自动归入游戏）';
+    $('progressTitle').textContent = '正在下载修改器…';
     $('progressFilename').textContent = dl.filename;
     $('progressFill').style.width = '0%';
     $('progressPct').textContent = '0%';
     var timer = pollProgress('get_download_state', 'downloadOverlay', 'progressFill', 'progressPct');
     try {
       var r = await api.download_trainer(dl.link, dl.filename, gameName,
-        options || 0, version || '', detailUrl || '');
+        options || 0, version || '', detailUrl || '', pick.game_id);
       clearInterval(timer); $('downloadOverlay').style.display = 'none';
-      if (r.ok) { toast('下载完成，已归入对应游戏', 'success'); loadLibrary(); loadHub(); }
-      else toast('下载失败：' + r.error, 'error');
+      if (r.ok) {
+        toast('下载完成，已归入「' + pick.name + '」', 'success');
+        loadLibrary(); loadHub(); loadAllMods();
+      } else toast('下载失败：' + r.error, 'error');
     } catch (e) {
       clearInterval(timer); $('downloadOverlay').style.display = 'none';
       toast('下载失败：' + e, 'error');

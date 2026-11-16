@@ -27,7 +27,7 @@
       </div>
       <div class="nav-item" data-page="online">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
-        <span>在线下载</span>
+        <span>修改器在线下载</span>
       </div>
       <div class="nav-item" data-page="mods">
         <svg viewBox="0 0 24 24"><path d="M10 3h4v4h4a1 1 0 011 1v4h-3v4h-4v-4H8v4H4v-4a1 1 0 011-1h4V8H6a1 1 0 01-1-1V4a1 1 0 011-1h4z"/></svg>
@@ -47,7 +47,7 @@
         <div class="tip-title">安全提示</div>
         <div class="tip-text">本工具仅做文件管理与启动，不修改任何游戏进程。修改器来自第三方站点，请核对文件哈希后再决定是否放行。仅限单机，勿用于联机。</div>
       </div>
-      <div class="version">v1.5.9 · 本地运行</div>
+      <div class="version">v1.6.1 · 本地运行</div>
     </div>
   </aside>
 
@@ -134,7 +134,7 @@
           <input type="text" id="onlineQuery" placeholder="输入游戏英文名，如 Black Myth Wukong / Elden Ring / 黑神话：悟空…">
           <button class="btn btn-primary" id="btnSearch">搜索</button>
         </div>
-        <div class="search-hint">数据来自 <a class="link" href="https://flingtrainer.com" target="_blank">flingtrainer.com</a> · 全部为免费独立版 · 第三方站点资源，请自行核对文件哈希</div>
+        <div class="search-hint">仅下载修改器（不含 Mod）· 数据来自 <a class="link" href="https://flingtrainer.com" target="_blank">flingtrainer.com</a> · 免费独立版 · 下载前需选择归入的游戏 · 请自行核对文件哈希</div>
       </div>
       <div id="searchResults"></div>
       <div class="detail-panel" id="detailPanel" style="display:none">
@@ -252,6 +252,26 @@
     <div class="confirm-actions">
       <button class="btn btn-ghost" id="promptCancel">取消</button>
       <button class="btn btn-primary" id="promptOk">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 选择下载归属游戏：下载修改器前必须选定 -->
+<div class="overlay" id="pickGameOverlay" style="display:none">
+  <div class="confirm-card">
+    <div class="confirm-title">选择要归入的游戏</div>
+    <div class="confirm-body" id="pickGameBody"></div>
+    <div class="prompt-fields">
+      <label class="prompt-field"><span>已有游戏</span>
+        <select id="pickGameSelect" class="select"></select>
+      </label>
+      <label class="prompt-field"><span>或新建游戏（留空则用上面选中的）</span>
+        <input type="text" id="pickGameNew" placeholder="输入新游戏名称，如：荒野大镖客">
+      </label>
+    </div>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" id="pickGameCancel">取消</button>
+      <button class="btn btn-primary" id="pickGameOk">确认并下载</button>
     </div>
   </div>
 </div>
